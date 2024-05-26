@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 // Define currencies
@@ -22,7 +21,15 @@ public class CurrencySystem : MonoBehaviour
 
     private void Awake()
     {
-        instance = this;
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     private void Start()
@@ -65,81 +72,58 @@ public class CurrencySystem : MonoBehaviour
         }
     }
 
-    // Method that can be called externally to charge currency
+    // Method to charge currency with callbacks
     public void ChargeCurrency(CurrencyType currencyType, int amountToCharge, Action enoughCurrencyCallback, Action notEnoughCurrencyCallback)
     {
-        // Check if there's enough currency to charge
         if (currencyAmounts[currencyType] >= amountToCharge)
         {
-            // Execute the enough currency callback
             enoughCurrencyCallback?.Invoke();
-            // Deduct the currency
             currencyAmounts[currencyType] -= amountToCharge;
-            // Execute currency changed event
             OnCurrencyChanged?.Invoke(currencyType, currencyAmounts[currencyType]);
-            // Update UI
             UpdateUI();
-            // Save it
             SaveCurrency();
         }
         else
         {
-            // Execute the not enough currency callback
             notEnoughCurrencyCallback?.Invoke();
         }
     }
 
-    // Method that can be called externally to charge currency, this function takes into consideration the name of item being bought
+    // Method to charge currency with item name and callbacks
     public bool ChargeCurrency(CurrencyType currencyType, int amountToCharge, string itemName, Action<string> enoughCurrencyCallback, Action notEnoughCurrencyCallback)
     {
-        // Check if there's enough currency to charge
         if (currencyAmounts[currencyType] >= amountToCharge)
         {
-            // Execute the enough currency callback with the item name
             enoughCurrencyCallback?.Invoke(itemName);
-            // Deduct the currency
             currencyAmounts[currencyType] -= amountToCharge;
-            // Execute currency changed event
             OnCurrencyChanged?.Invoke(currencyType, currencyAmounts[currencyType]);
-            // Update UI
             UpdateUI();
-            // Save it
             SaveCurrency();
             return true; // Transaction successful
         }
         else
         {
-            // Execute the not enough currency callback
             notEnoughCurrencyCallback?.Invoke();
             return false; // Transaction failed due to insufficient funds
         }
     }
 
-    // Method that can be called externally to reward currency
+    // Method to reward currency
     public void RewardCurrency(CurrencyType currencyType, int amount)
     {
-        // Add the currency
         currencyAmounts[currencyType] += amount;
-        // Execute currency changed event
         OnCurrencyChanged?.Invoke(currencyType, currencyAmounts[currencyType]);
-        // Update UI
         UpdateUI();
-        // Save it
         SaveCurrency();
     }
 
-    // Method that can be called externally to reward currency with callback
+    // Method to reward currency with callback
     public void RewardCurrency(CurrencyType currencyType, int amount, Action increaseCallback)
     {
-        // Execute the increase currency callback
         increaseCallback?.Invoke();
-        // Add the currency
         currencyAmounts[currencyType] += amount;
-        // Execute currency changed event
         OnCurrencyChanged?.Invoke(currencyType, currencyAmounts[currencyType]);
-        // Update UI
         UpdateUI();
-        // Save it
         SaveCurrency();
     }
 
